@@ -38,73 +38,33 @@ from typing import Any, Callable
 class QAPair:
     """
     A question-answer pair for evaluation (part of the Golden Dataset).
-
-    From lecture: Golden dataset cần có:
-        - question: câu hỏi user
-        - ground_truth (expected_answer): expert-written expected answer
-        - context: source documents cần retrieve
-        - metadata: difficulty (easy/medium/hard), category, source_docs
-
-    Fields:
-        question:        The question to answer.
-        expected_answer: The reference/ground-truth answer (expert-written).
-        context:            Source context (may be empty string if not applicable).
-        metadata:           Optional metadata dict (difficulty, category, etc.).
-        retrieved_contexts: List of retrieved chunks (ORDER = retriever rank).
-                            Used by the retrieval-side metrics (Task 2b).
     """
-    # TODO: define fields
-    # Hints:
-    #   context: str = ""
-    #   metadata: dict = field(default_factory=dict)
-    #   retrieved_contexts: list = field(default_factory=list)
-    pass
+    question: str
+    expected_answer: str
+    context: str = ""
+    metadata: dict[str, Any] = field(default_factory=dict)
+    retrieved_contexts: list[str] = field(default_factory=list)
 
 
 @dataclass
 class EvalResult:
     """
     Evaluation result for a single Q&A pair.
-
-    From lecture - RAG metrics pipeline:
-        Question → Retriever → Context → Generator → Answer
-        Each step has a metric: Context Recall, Context Precision, Faithfulness, Answer Relevancy
-
-    From lecture - Score interpretation:
-        0.8-1.0: Good (Monitor, maintain)
-        0.6-0.8: Needs work (Analyze failures, iterate)
-        < 0.6: Significant issues (Deep investigation required)
-
-    Fields:
-        qa_pair:        The original QAPair.
-        actual_answer:  What the agent actually returned.
-        faithfulness:   Float 0-1, how grounded the answer is in context.
-        relevance:      Float 0-1, how relevant the answer is to the question.
-        completeness:   Float 0-1, how complete the answer is vs expected.
-        passed:         True if all three scores >= 0.5.
-        failure_type:   None if passed, otherwise one of:
-                        "hallucination", "irrelevant", "incomplete", "off_topic".
-        context_precision: Float 0-1 or None — quality of retrieval ranking.
-        context_recall:    Float 0-1 or None — coverage of expected by context.
-                        (Both stay None unless retrieved chunks are supplied;
-                         they are NOT part of overall_score().)
     """
-    # TODO: define fields
-    # Hints:
-    #   failure_type: str | None = None
-    #   context_precision: float | None = None
-    #   context_recall: float | None = None
-    pass
+    qa_pair: QAPair
+    actual_answer: str
+    faithfulness: float
+    relevance: float
+    completeness: float
+    passed: bool
+    failure_type: str | None = None
+    context_precision: float | None = None
+    context_recall: float | None = None
 
     def overall_score(self) -> float:
-        """Compute the average of faithfulness, relevance, and completeness.
-
-        Returns:
-            (faithfulness + relevance + completeness) / 3.0
-
-        TODO: Return mean of the three metric scores
-        """
-        raise NotImplementedError
+        """Compute the average of faithfulness, relevance, and completeness."""
+        # Trung bình cộng của 3 answer-side metrics
+        return (self.faithfulness + self.relevance + self.completeness) / 3.0
 
 
 # ---------------------------------------------------------------------------
